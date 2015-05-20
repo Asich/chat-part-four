@@ -1,0 +1,9 @@
+data/
+node_modules/
+mongod.lock
+local.ns
+local.0
+journal/
+azachat.ns
+azachat.0
+_tmp/
