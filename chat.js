@@ -1,42 +1,33 @@
 var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
-var PORT = process.env.PORT || 8080;
 
-app.get('/',function(req,res){
-	//request : son cabeceras y datos que nos envia el navegador.
-	//response : son todo lo que enviamos desde el servidor.
-	res.sendFile(__dirname + '/index.html');
+// app.get('/', function(req, res){
+//   res.send('<h1>Hello world</h1>');
+// });
+app.get('/', function(req, res){
+  res.sendFile(__dirname + '/index.html');
 });
 
-io.on('connection',function(socket){
-	console.log("usuario id : %s",socket.id);
+io.on('connection', function(socket){
 
-	var channel = 'channel-a';
+  console.log('a user connected');
 
-	socket.broadcast.emit('message','El usuario '+socket.id+' se ha conectado!','System');
+  socket.on('disconnect', function(){
+    console.log('user disconnected');
+  });
 
-	socket.join(channel);
+  socket.on('chat message', function(msg){
+    //console.log('message: ' + msg);
+    io.emit('chat message', msg);//broadcast to other users
+    
+    //save to mongo
 
-	socket.on('message',function(msj){
-		//io.emit('message',msj,socket.id);
-		io.sockets.in(channel).emit('message',msj,socket.id); //enviar a todos del canal
-		//socket.broadcast.to(channel).emit('message',msj,socket.id); //enviar a todos del canal menos a mi
-	});
+  });
 
-	socket.on('disconnect',function(){
-		console.log("Desconectado : %s",socket.id);
-	});
-
-	socket.on('change channel',function(newChannel){
-		socket.leave(channel);
-		socket.join(newChannel);
-		channel = newChannel;
-		socket.emit('change channel',newChannel);
-	});
 
 });
 
-http.listen(PORT,function(){
-	console.log('el servidor esta escuchando el puerto %s',PORT);
+http.listen(8080, function(){
+  console.log('listening on *:8080');
 });
