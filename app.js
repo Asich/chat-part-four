@@ -3,6 +3,7 @@ var express = require('express'),
 	server = require('http').createServer(app),
 	io = require('socket.io').listen(server),
 	mongoose = require('mongoose'),
+	uriUtil = require('mongodb-uri'),
 	users = {};
 
 var PORT = process.env.PORT || 8080;	
@@ -10,13 +11,27 @@ var PORT = process.env.PORT || 8080;
 server.listen(PORT);
 
 
-mongoose.connect('mongodb://heroku_app37044640:@ds035448.mongolab.com:35448/heroku_app37044640', function(err){
-	if(err){
-		console.log(err);
-	} else{
-		console.log('Connected to mongodb!');
-	}
-});
+/* 
+ * Mongoose by default sets the auto_reconnect option to true.
+ * We recommend setting socket options at both the server and replica set level.
+ * We recommend a 30 second connection timeout because it allows for 
+ * plenty of time in most operating environments.
+ */
+var options = { server: { socketOptions: { keepAlive: 1, connectTimeoutMS: 30000 } }, 
+                replset: { socketOptions: { keepAlive: 1, connectTimeoutMS : 30000 } } };
+
+var mongodbUri = 'mongodb://heroku_app37044640:gld2hg58jsatundded5he867nt@ds035448.mongolab.com:35448/heroku_app37044640';
+var mongooseUri = uriUtil.formatMongoose(mongodbUri);
+
+mongoose.connect(mongooseUri, options);
+
+// mongoose.connect('mongodb://heroku_app37044640:@ds035448.mongolab.com:35448/heroku_app37044640', function(err){
+// 	if(err){
+// 		console.log(err);
+// 	} else{
+// 		console.log('Connected to mongodb!');
+// 	}
+// });
 
 var chatSchema = mongoose.Schema({
 	nick: String,
